@@ -72,6 +72,11 @@ func resourceArmRedisCache() *schema.Resource {
 				Optional: true,
 			},
 
+			"subnet_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+
 			"redis_configuration": {
 				Type:     schema.TypeList,
 				Required: true,
@@ -163,6 +168,8 @@ func resourceArmRedisCacheCreate(d *schema.ResourceData, meta interface{}) error
 
 	enableNonSSLPort := d.Get("enable_non_ssl_port").(bool)
 
+	subnetID := d.Get("subnet_id").(string)
+
 	capacity := int32(d.Get("capacity").(int))
 	family := redis.SkuFamily(d.Get("family").(string))
 	sku := redis.SkuName(d.Get("sku_name").(string))
@@ -175,6 +182,7 @@ func resourceArmRedisCacheCreate(d *schema.ResourceData, meta interface{}) error
 		Location: &location,
 		CreateProperties: &redis.CreateProperties{
 			EnableNonSslPort: &enableNonSSLPort,
+			SubnetID:         &subnetID,
 			Sku: &redis.Sku{
 				Capacity: &capacity,
 				Family:   family,
