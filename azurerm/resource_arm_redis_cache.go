@@ -238,6 +238,8 @@ func resourceArmRedisCacheUpdate(d *schema.ResourceData, meta interface{}) error
 
 	enableNonSSLPort := d.Get("enable_non_ssl_port").(bool)
 
+	subnetID := d.Get("subnet_id").(string)
+
 	capacity := int32(d.Get("capacity").(int))
 	family := redis.SkuFamily(d.Get("family").(string))
 	sku := redis.SkuName(d.Get("sku_name").(string))
@@ -248,6 +250,7 @@ func resourceArmRedisCacheUpdate(d *schema.ResourceData, meta interface{}) error
 	parameters := redis.UpdateParameters{
 		UpdateProperties: &redis.UpdateProperties{
 			EnableNonSslPort: &enableNonSSLPort,
+			SubnetID:         &subnetID,
 			Sku: &redis.Sku{
 				Capacity: &capacity,
 				Family:   family,
@@ -333,6 +336,7 @@ func resourceArmRedisCacheRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("hostname", resp.HostName)
 	d.Set("port", resp.Port)
 	d.Set("enable_non_ssl_port", resp.EnableNonSslPort)
+	d.Set("subnet_id", resp.SubnetID)
 	d.Set("capacity", resp.Sku.Capacity)
 	d.Set("family", resp.Sku.Family)
 	d.Set("sku_name", resp.Sku.Name)
