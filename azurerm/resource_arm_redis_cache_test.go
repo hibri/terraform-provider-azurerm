@@ -368,7 +368,7 @@ resource "azurerm_redis_cache" "test" {
     }
 
     tags {
-    	environment = "production"
+        environment = "production"
     }
 }
 `, rInt, location, rInt)
@@ -503,6 +503,44 @@ resource "azurerm_redis_cache" "test" {
       rdb_backup_frequency          = 60
       rdb_backup_max_snapshot_count = 1
       rdb_storage_connection_string = "DefaultEndpointsProtocol=https;BlobEndpoint=${azurerm_storage_account.test.primary_blob_endpoint};AccountName=${azurerm_storage_account.test.name};AccountKey=${azurerm_storage_account.test.primary_access_key}"
+    }
+}
+`, rInt, location, rString, rInt)
+}
+
+func testAccAzureRMRedisCacheSubnetEnabled(rInt int, rString string, location string) string {
+	return fmt.Sprintf(`
+resource "azurerm_resource_group" "test" {
+    name = "acctestRG-%d"
+    location = "%s"
+}
+resource "azurerm_virtual_network" "test" {
+    name                = "acctestVNet-%d"
+    resource_group_name = "${azurerm_resource_group.test.name}"
+    address_space       = ["10.0.0.0/16"]
+    location            = "${azurerm_resource_group.test.location}"
+ }
+
+ resource "azurerm_subnet" "test" {
+    name                 = "acctestSubnet-%d"
+    resource_group_name  = "${azurerm_resource_group.test.resource_group_name}"
+    virtual_network_name = "${azurerm_virtual_network.test.name}"
+    address_prefix       = "10.0.1.0/24"
+ }
+  resource "azurerm_redis_cache" "test" {
+    name                = "acctestRedis-%d"
+    location            = "${azurerm_resource_group.test.location}"
+    resource_group_name = "${azurerm_resource_group.test.name}"
+    capacity            = 1
+    family              = "P"
+    sku_name            = "Premium"
+    enable_non_ssl_port = false
+    subnet_id           = "${azurerm_subnet.test.id}"
+    redis_configuration {
+      maxclients         = 256,
+      maxmemory_reserved = 2,
+      maxmemory_delta    = 2
+      maxmemory_policy   = "allkeys-lru"
     }
 }
 `, rInt, location, rString, rInt)
